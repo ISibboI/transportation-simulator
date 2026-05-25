@@ -6,3 +6,10 @@ members = ["transportation-simulator"]
 license = "CC-BY-NC-SA-4.0"
 repository = "https://github.com/ISibboI/transportation-simulator"
 edition = "2024"
+
+[workspace.dependencies]
+uom = "0.38.0"
+optional-numeric-index = "0.4.1"
+num-traits = "0.2.19"
+tagged-vec = "1.0.1"
+approx = "0.5.1"

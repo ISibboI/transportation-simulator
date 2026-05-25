@@ -8,9 +8,15 @@ use uom::{
     },
 };
 
-pub trait RoadEngine {
+pub trait DynamicRoadEngine {
+    type StaticEngine;
+
     /// Current angular velocity as ratio of maximum.
-    fn angular_velocity_ratio(&self, velocity: Velocity) -> Ratio;
+    fn angular_velocity_ratio(
+        &self,
+        static_engine: &Self::StaticEngine,
+        velocity: Velocity,
+    ) -> Ratio;
 
     /// Currently selected gear (zero-based).
     fn gear(&self) -> Gear;
@@ -20,6 +26,7 @@ pub trait RoadEngine {
     /// Returns the actual acceleration provided by the engine.
     fn request_acceleration(
         &mut self,
+        static_engine: &Self::StaticEngine,
         velocity: Velocity,
         requested_acceleration: Acceleration,
     ) -> Acceleration;
@@ -27,9 +34,12 @@ pub trait RoadEngine {
 
 implement_fixed_index!(pub Gear, pub OptionalGear, u8);
 
-pub struct StandardEngine {
-    gear_max_velocities: TaggedVec<Gear, Velocity>,
+pub struct DynamicStandardEngine {
     gear: Gear,
+}
+
+pub struct StaticStandardEngine {
+    gear_max_velocities: TaggedVec<Gear, Velocity>,
     drag_coefficient: ReciprocalLength,
     gear_zero_power: Acceleration,
     model: StandardEngineModel,
@@ -44,7 +54,7 @@ pub struct StandardEngineModel {
     max_power_ratio: Ratio,
 }
 
-impl StandardEngine {
+impl StaticStandardEngine {
     pub fn new(
         gear_max_velocities: TaggedVec<Gear, Velocity>,
         drag_coefficient: ReciprocalLength,
@@ -64,7 +74,6 @@ impl StandardEngine {
 
         Self {
             gear_max_velocities,
-            gear: 0.into(),
             drag_coefficient,
             gear_zero_power,
             model,
@@ -90,9 +99,15 @@ impl StandardEngine {
     }
 }
 
-impl RoadEngine for StandardEngine {
-    fn angular_velocity_ratio(&self, velocity: Velocity) -> Ratio {
-        velocity / self.gear_max_velocities[self.gear]
+impl DynamicRoadEngine for DynamicStandardEngine {
+    type StaticEngine = StaticStandardEngine;
+
+    fn angular_velocity_ratio(
+        &self,
+        static_engine: &Self::StaticEngine,
+        velocity: Velocity,
+    ) -> Ratio {
+        velocity / static_engine.gear_max_velocities[self.gear]
     }
 
     fn gear(&self) -> Gear {
@@ -101,26 +116,28 @@ impl RoadEngine for StandardEngine {
 
     fn request_acceleration(
         &mut self,
+        static_engine: &Self::StaticEngine,
         velocity: Velocity,
         requested_acceleration: Acceleration,
     ) -> Acceleration {
         // Check if gear should be shifted up.
-        if self.gear < Gear::from_usize(self.gear_max_velocities.len() - 1) {
+        if self.gear < Gear::from_usize(static_engine.gear_max_velocities.len() - 1) {
             let higher_gear_acceleration =
-                self.acceleration_capability_by_gear(velocity, self.gear.gear_up());
+                static_engine.acceleration_capability_by_gear(velocity, self.gear.gear_up());
             if higher_gear_acceleration > requested_acceleration {
                 self.gear = self.gear.gear_up();
                 return requested_acceleration;
             }
         }
 
-        let current_gear_acceleration = self.acceleration_capability_by_gear(velocity, self.gear);
+        let current_gear_acceleration =
+            static_engine.acceleration_capability_by_gear(velocity, self.gear);
 
         // Check if gear should be shifted down.
         if current_gear_acceleration < requested_acceleration && self.gear > Gear::new(0) {
             self.gear = self.gear.gear_down();
             return requested_acceleration
-                .min(self.acceleration_capability_by_gear(velocity, self.gear));
+                .min(static_engine.acceleration_capability_by_gear(velocity, self.gear));
         }
 
         // If no shifting happens, apply acceleration according to current gear.

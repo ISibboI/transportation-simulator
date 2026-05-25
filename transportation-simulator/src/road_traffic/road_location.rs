@@ -1,9 +1,10 @@
-use super::{road_index::RoadIndex, road_queue_index::RoadQueueIndex};
+use super::indices::{LaneIndex, LaneQueueIndex, RoadIndex};
 
 #[derive(Clone, Copy)]
 pub struct RoadLocation {
     road: RoadIndex,
-    queue_index: RoadQueueIndex,
+    lane: LaneIndex,
+    queue_index: LaneQueueIndex,
 }
 
 impl RoadLocation {
@@ -11,7 +12,11 @@ impl RoadLocation {
         self.road
     }
 
-    pub fn queue_index(&self) -> RoadQueueIndex {
+    pub fn lane(&self) -> LaneIndex {
+        self.lane
+    }
+
+    pub fn queue_index(&self) -> LaneQueueIndex {
         self.queue_index
     }
 }

@@ -38,8 +38,13 @@ dependencies = [
 [[package]]
 name = "tagged-vec"
 version = "1.0.1"
+source = "git+https://github.com/sebschmi/tagged-vec?rev=a924aafb72af031d73995d761492cbb54ebea62f#a924aafb72af031d73995d761492cbb54ebea62f"
+
+[[package]]
+name = "tagged-vec-deque"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78f671eb151d7ae65941e73e20b675892bade562a1ccfd4abb029cd5871aee66"
+checksum = "42939d4b6471e713388ef6cff2ad0723cfff10da53fc15164e963158e5e4f6fc"
 
 [[package]]
 name = "transportation-simulator"
@@ -49,6 +54,7 @@ dependencies = [
  "num-traits",
  "optional-numeric-index",
  "tagged-vec",
+ "tagged-vec-deque",
  "uom",
 ]
 

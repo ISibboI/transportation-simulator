@@ -11,5 +11,6 @@ edition = "2024"
 uom = "0.38.0"
 optional-numeric-index = "0.4.1"
 num-traits = "0.2.19"
-tagged-vec = "1.0.1"
+tagged-vec = { git = "https://github.com/sebschmi/tagged-vec", rev = "a924aafb72af031d73995d761492cbb54ebea62f" }
+tagged-vec-deque = "0.1.0"
 approx = "0.5.1"

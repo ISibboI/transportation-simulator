@@ -1,6 +1,9 @@
 [package]
 name = "transportation-simulator"
+description = "Simulate different modes of transportation and their interactions."
+license.workspace = true
+repository.workspace = true
 version = "0.0.0"
-edition = "2024"
+edition.workspace = true
 
 [dependencies]
